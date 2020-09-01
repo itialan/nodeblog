@@ -33,8 +33,8 @@ const userSchema = new mongoose.Schema({
   }, 
   tokens: [{
     token: {
-      type: String
-      //required: true
+      type: String,
+      required: true
     }
   }],
   avatar: {
@@ -51,6 +51,22 @@ userSchema.methods.generateAuthToken = async function () {
   await user.save();
 
   return token;
+};
+
+userSchema.statics.findByCredentials = async (email, password) => {
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new Error('Unable to login');
+  }
+
+  const isMatch = await bcrypt.compare(password, user.password);
+
+  if (!isMatch) {
+    throw new Error('Unable to login');
+  }
+
+  return user;
 };
 
 // Hash the plain text password before saving

@@ -15,6 +15,29 @@ router.get('/signin', (req, res) => {
   res.render('signin', { data: {} });
 });
 
+router.post('/signin', async (req, res) => {
+  const params = req.body;
+
+  if (params.email.trim().length === 0) {
+    res.render('signin', { data: { error: 'Please enter an email' }});
+  } else if (params.password.trim().length === 0) {
+    res.render('signin', { data: { error: 'Please enter an password' }});
+  } else {
+    try {
+      const user = await user_md.findByCredentials(params.email, params.password);
+      if (!user) {
+        res.render('signin', { data: { error: 'Password was wrong!' } });
+      } else {
+        const token = await user.generateAuthToken();
+        console.log(user, token);
+        res.redirect('/admin/');
+      }
+    } catch (e) {
+      res.render('signin', { data: { error: 'User not exist!' } });
+    }
+  }
+});
+
 // === SIGNUP ===
 router.get('/signup', (req, res) => {
   res.render('signup', { data: {} });
